@@ -1,0 +1,14 @@
+CPP Utils v1.0
+
+Usage:
+  cppu <file> [flags]
+  cppu <file> -i <input.txt> -o <output.txt> [flags]
+
+Flags:
+  -i, --input <path>            Read stdin from file (optional; defaults to stdin)
+  -o, --output <path>           Write output to file (optional; defaults to stdout)
+  -m, --max-output-chars <N>    Max captured output (default 50,000)
+  -q, --quiet                   Suppress info logs
+      --no-clean                Keep compiled .exe
+      --use-clang               Use clang++ instead of g++
+      --cflags "..."            Extra flags passed to g++ (default: -O2)

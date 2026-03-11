@@ -8,15 +8,25 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
+use chrono::Local;
+
 use crate::cli::Cli;
 
 const RC_TRUNCATED_OUTPUT: i32 = 1;
 
+const SUCCESS: &str = "SUCCESS";
+const INFO: &str = "INFO";
+const ERROR_: &str = "ERROR";
+const WARNING: &str = "WARNING";
+
 const CLR_RESET: &str = "\x1b[0m";
-const SUCCESS: &str = "\x1b[1m\x1b[48;2;119;239;119m\x1b[38;2;54;53;55m SUCCESS \x1b[0m\x1b[38;2;119;239;119m";
-const INFO: &str = "\x1b[1m\x1b[48;2;97;190;255m\x1b[38;2;54;53;55m INFO \x1b[0m";
-const ERROR_: &str = "\x1b[1m\x1b[48;2;255;95;95m\x1b[38;2;54;53;55m ERROR \x1b[0m\x1b[38;2;255;95;95m";
-const WARNING: &str = "\x1b[1m\x1b[48;2;255;215;95m\x1b[38;2;54;53;55m WARNING \x1b[0m\x1b[38;2;255;215;95m";
+const SUCCESS_LABEL: &str = "\x1b[1m\x1b[38;2;119;239;119m";
+const INFO_LABEL: &str = "\x1b[1m\x1b[38;2;97;190;255m";
+const ERROR_LABEL: &str = "\x1b[1;91m";
+const WARNING_LABEL: &str = "\x1b[1m\x1b[38;2;255;215;95m";
+
+const INFO_BODY: &str = "\x1b[2m";
+const ERROR_BODY: &str = "\x1b[38;2;255;95;95m";
 
 pub(crate) struct Runner {
     args: Cli,
@@ -28,6 +38,7 @@ impl Runner {
     }
 
     pub(crate) fn run(&self) -> i32 {
+        let show_status_logs = !self.args.quiet;
         let cancel_requested = Arc::new(AtomicBool::new(false));
         let active_child = Arc::new(Mutex::new(None::<u32>));
 
@@ -54,12 +65,7 @@ impl Runner {
 
         if let Some(input) = &self.args.input {
             if !input.exists() {
-                println!(
-                    "{} Input file not found: {}{}",
-                    ERROR_,
-                    abs_string(input),
-                    CLR_RESET
-                );
+                log_line(ERROR_, format!("Input file not found: {}", abs_string(input)));
                 return 1;
             }
         }
@@ -68,52 +74,38 @@ impl Runner {
             if let Some(parent) = output.parent()
                 && !parent.as_os_str().is_empty() && !parent.exists()
             {
-                println!(
-                    "{} Output directory not found: {}{}",
+                log_line(
                     ERROR_,
-                    abs_string(parent),
-                    CLR_RESET
+                    format!("Output directory not found: {}", abs_string(parent)),
                 );
                 return 1;
             }
 
             if let Err(err) = File::create(output) {
-                println!(
-                    "{} Cannot create output file: {}{}",
+                log_line(
                     ERROR_,
-                    abs_string(output),
-                    CLR_RESET
+                    format!("Cannot create output file: {}", abs_string(output)),
                 );
                 if !self.args.quiet {
-                    println!("{}{}", err, CLR_RESET);
+                    log_line(ERROR_, err.to_string());
                 }
                 return 1;
             }
 
-            if !self.args.quiet {
-                println!(
-                    "{} Created output file: {}{}",
-                    INFO,
-                    abs_string(output),
-                    CLR_RESET
-                );
+            if show_status_logs {
+                log_line(INFO, format!("Created output file: {}", abs_string(output)));
             }
         }
 
         if cancel_requested.load(Ordering::SeqCst) {
             if !self.args.quiet {
-                println!("{} Canceled by user (Ctrl+C){}", WARNING, CLR_RESET);
+                log_line(WARNING, "Canceled by user (Ctrl+C)");
             }
             return 1;
         }
 
-        if !self.args.quiet {
-            println!(
-                "{} Compiling file: {}{}",
-                INFO,
-                abs_string(&source),
-                CLR_RESET
-            );
+        if show_status_logs {
+            log_line(INFO, format!("Compiling file: {}", abs_string(&source)));
         }
 
         let (compile_status, compile_stderr) = match compile_file(
@@ -124,22 +116,17 @@ impl Runner {
         ) {
             Ok(v) => v,
             Err(err) => {
-                println!("{} Failed to start compiler{}", ERROR_, CLR_RESET);
+                log_line(ERROR_, "Failed to start compiler");
                 if !self.args.quiet {
-                    println!("{}{}", err, CLR_RESET);
+                    log_line(ERROR_, err.to_string());
                 }
                 return 1;
             }
         };
 
         if compile_status.success() && exe.exists() {
-            if !self.args.quiet {
-                println!(
-                    "{} Testing output file: {}{}",
-                    INFO,
-                    abs_string(&exe),
-                    CLR_RESET
-                );
+            if show_status_logs {
+                log_line(INFO, format!("Testing output file: {}", abs_string(&exe)));
             }
 
             let exec_rc = execute_and_capture(
@@ -159,45 +146,48 @@ impl Runner {
                 return exec_rc;
             }
 
-            if !self.args.quiet {
+            if show_status_logs {
                 if let Some(output) = &self.args.output {
-                    println!(
-                        "{} Output written to: {}{}",
-                        SUCCESS,
-                        abs_string(output),
-                        CLR_RESET
-                    );
+                    log_line(SUCCESS, format!("Output written to: {}", abs_string(output)));
                 } else {
-                    println!("\n\n{} Output written to stdout{}", SUCCESS, CLR_RESET);
+                    println!();
+                    println!();
+                    log_line(SUCCESS, "Output written to stdout");
                 }
             }
         } else {
             if compile_status.success() && !exe.exists() {
-                print!("{}{}", compile_stderr, CLR_RESET);
-                println!(
-                    "{} Compilation successful but cannot find output file: {}{}",
+                if !compile_stderr.trim().is_empty() {
+                    log_line(ERROR_, "Compiler output:");
+                    eprint!("{}", compile_stderr);
+                }
+                log_line(
                     ERROR_,
-                    abs_string(&exe),
-                    CLR_RESET
+                    format!(
+                        "Compilation successful but cannot find output file: {}",
+                        abs_string(&exe)
+                    ),
                 );
             } else {
-                println!("{} Compiler output:{}", ERROR_, CLR_RESET);
-                print!("{}{}", compile_stderr, CLR_RESET);
-                println!();
-                println!("{} Compilation failed!{}", ERROR_, CLR_RESET);
+                if !compile_stderr.trim().is_empty() {
+                    log_line(ERROR_, "Compiler output:");
+                    eprint!("{}", compile_stderr);
+                    eprintln!();
+                }
+                log_line(ERROR_, "Compilation failed!");
             }
             return 1;
         }
 
         if !self.args.no_clean {
-            let rc = clean_exe(&exe, self.args.quiet);
+            let rc = clean_exe(&exe, show_status_logs);
             if rc != 0 {
                 return rc;
             }
         }
 
-        if !(self.args.quiet) {
-            print!("{} Exiting...{}", INFO, CLR_RESET);
+        if show_status_logs {
+            log_inline(INFO, "Exiting...");
             let _ = io::stdout().flush();
         }
 
@@ -245,21 +235,24 @@ fn execute_and_capture(
     cancel_requested: Arc<AtomicBool>,
     active_child: Arc<Mutex<Option<u32>>>,
 ) -> i32 {
+    let to_file = output_path.is_some();
     let exe_path = match absolute_path(exe) {
         Ok(path) => path,
         Err(err) => {
             if !quiet {
-                println!(
-                    "{} Failed to resolve executable path: {}{}",
-                    ERROR_, err, CLR_RESET
-                );
+                log_line(ERROR_, format!("Failed to resolve executable path: {}", err));
             }
             return 1;
         }
     };
 
     let mut command = Command::new(&exe_path);
-    command.stdout(Stdio::piped()).stderr(Stdio::inherit());
+    command.stdout(Stdio::piped());
+    if to_file {
+        command.stderr(Stdio::piped());
+    } else {
+        command.stderr(Stdio::inherit());
+    }
     if let Some(parent) = exe_path.parent() {
         command.current_dir(parent);
     }
@@ -271,12 +264,7 @@ fn execute_and_capture(
             }
             Err(_) => {
                 if !quiet {
-                    println!(
-                        "{} Failed to open input file: {}{}",
-                        ERROR_,
-                        abs_string(inp),
-                        CLR_RESET
-                    );
+                    log_line(ERROR_, format!("Failed to open input file: {}", abs_string(inp)));
                 }
                 return 1;
             }
@@ -289,16 +277,8 @@ fn execute_and_capture(
         Ok(c) => c,
         Err(err) => {
             if !quiet {
-                println!(
-                    "{} Failed to start process: {}{}",
-                    ERROR_, err, CLR_RESET
-                );
-                println!(
-                    "{} Executable path: {}{}",
-                    ERROR_,
-                    exe_path.display(),
-                    CLR_RESET
-                );
+                log_line(ERROR_, format!("Failed to start process: {}", err));
+                log_line(ERROR_, format!("Executable path: {}", exe_path.display()));
             }
             return 1;
         }
@@ -317,21 +297,41 @@ fn execute_and_capture(
                 *guard = None;
             }
             if !quiet {
-                println!("{} Failed to capture process output{}", ERROR_, CLR_RESET);
+                log_line(ERROR_, "Failed to capture process output");
             }
             return 1;
         }
     };
 
+    let stderr = if to_file {
+        match child.stderr.take() {
+            Some(s) => Some(s),
+            None => {
+                let _ = child.kill();
+                let _ = child.wait();
+                if let Ok(mut guard) = active_child.lock() {
+                    *guard = None;
+                }
+                if !quiet {
+                    log_line(ERROR_, "Failed to capture process error output");
+                }
+                return 1;
+            }
+        }
+    } else {
+        None
+    };
+
     let (tx, rx) = mpsc::channel::<Vec<u8>>();
-    let reader_handle = thread::spawn(move || {
+    let stdout_tx = tx.clone();
+    let stdout_reader_handle = thread::spawn(move || {
         let mut reader = stdout;
         let mut buf = vec![0_u8; 8192];
         loop {
             match reader.read(&mut buf) {
                 Ok(0) => break,
                 Ok(n) => {
-                    if tx.send(buf[..n].to_vec()).is_err() {
+                    if stdout_tx.send(buf[..n].to_vec()).is_err() {
                         break;
                     }
                 }
@@ -339,24 +339,40 @@ fn execute_and_capture(
             }
         }
     });
-
-    let to_file = output_path.is_some();
+    let stderr_reader_handle = stderr.map(|stderr_pipe| {
+        thread::spawn(move || {
+            let mut reader = stderr_pipe;
+            let mut buf = vec![0_u8; 8192];
+            loop {
+                match reader.read(&mut buf) {
+                    Ok(0) => break,
+                    Ok(n) => {
+                        if tx.send(buf[..n].to_vec()).is_err() {
+                            break;
+                        }
+                    }
+                    Err(_) => break,
+                }
+            }
+        })
+    });
     let mut out_file = match output_path {
         Some(path) => match File::create(path) {
             Ok(file) => Some(file),
             Err(_) => {
                 let _ = child.kill();
                 let _ = child.wait();
-                let _ = reader_handle.join();
+                let _ = stdout_reader_handle.join();
+                if let Some(handle) = stderr_reader_handle {
+                    let _ = handle.join();
+                }
                 if let Ok(mut guard) = active_child.lock() {
                     *guard = None;
                 }
                 if !quiet {
-                    println!(
-                        "{} Cannot open output file for writing: {}{}",
+                    log_line(
                         ERROR_,
-                        abs_string(path),
-                        CLR_RESET
+                        format!("Cannot open output file for writing: {}", abs_string(path)),
                     );
                 }
                 return 1;
@@ -372,10 +388,13 @@ fn execute_and_capture(
     while !finished {
         if cancel_requested.load(Ordering::SeqCst) {
             if !quiet {
-                println!("{} Execution interrupted (Ctrl+C){}", WARNING, CLR_RESET);
+                log_line(WARNING, "Execution interrupted (Ctrl+C)");
             }
             terminate_and_wait(&mut child, 2000, quiet);
-            let _ = reader_handle.join();
+            let _ = stdout_reader_handle.join();
+            if let Some(handle) = stderr_reader_handle {
+                let _ = handle.join();
+            }
             if let Ok(mut guard) = active_child.lock() {
                 *guard = None;
             }
@@ -398,9 +417,9 @@ fn execute_and_capture(
                         }
 
                         if !quiet {
-                            println!(
-                                "{} Output exceeds {} characters! Truncating output.{}",
-                                WARNING, max_chars, CLR_RESET
+                            log_line(
+                                WARNING,
+                                format!("Output exceeds {} characters! Truncating output.", max_chars),
                             );
                         }
 
@@ -412,7 +431,10 @@ fn execute_and_capture(
                             let _ = file.flush();
                         }
 
-                        let _ = reader_handle.join();
+                        let _ = stdout_reader_handle.join();
+                        if let Some(handle) = stderr_reader_handle {
+                            let _ = handle.join();
+                        }
                         if let Ok(mut guard) = active_child.lock() {
                             *guard = None;
                         }
@@ -439,7 +461,10 @@ fn execute_and_capture(
     }
 
     let _ = child.wait();
-    let _ = reader_handle.join();
+    let _ = stdout_reader_handle.join();
+    if let Some(handle) = stderr_reader_handle {
+        let _ = handle.join();
+    }
 
     if let Some(file) = out_file.as_mut() {
         let _ = file.write_all(&buffered);
@@ -465,54 +490,80 @@ fn terminate_and_wait(child: &mut Child, timeout_ms: u64, quiet: bool) {
     }
 
     if !quiet {
-        println!(
-            "{} Abortion took too long! Killing process immediately.{}",
-            WARNING, CLR_RESET
-        );
+        log_line(WARNING, "Abortion took too long! Killing process immediately.");
     }
 
     let _ = child.kill();
     let _ = child.wait();
 }
 
-fn clean_exe(output: &Path, quiet: bool) -> i32 {
+fn clean_exe(output: &Path, show_status_logs: bool) -> i32 {
     if output.exists() {
         match fs::remove_file(output) {
             Ok(_) => {
-                if !quiet {
-                    println!(
-                        "{} Deleted output file: {}{}",
-                        SUCCESS,
-                        abs_string(output),
-                        CLR_RESET
-                    );
+                if show_status_logs {
+                    log_line(SUCCESS, format!("Deleted output file: {}", abs_string(output)));
                 }
                 0
             }
             Err(err) => {
-                if !quiet {
-                    println!("{} Error:{}", ERROR_, CLR_RESET);
-                    println!("{}", err);
-                    println!(
-                        "{} Cannot delete output file: {}{}",
-                        ERROR_,
-                        abs_string(output),
-                        CLR_RESET
-                    );
-                }
+                log_line(ERROR_, "Error:");
+                log_line(ERROR_, err.to_string());
+                log_line(
+                    ERROR_,
+                    format!("Cannot delete output file: {}", abs_string(output)),
+                );
                 1
             }
         }
     } else {
-        if !quiet {
-            println!(
-                "{} Output file not found! Skipping deletion: {}{}",
-                WARNING,
-                abs_string(output),
-                CLR_RESET
-            );
-        }
+        log_line(
+            WARNING,
+            format!("Output file not found! Skipping deletion: {}", abs_string(output)),
+        );
         1
+    }
+}
+
+fn timestamp() -> String {
+    Local::now().format("%H:%M:%S").to_string()
+}
+
+fn log_line(label: &str, message: impl AsRef<str>) {
+    let (label_style, body_style) = log_styles(label);
+    eprintln!(
+        "[{}] {}{}{} {}{}{}",
+        timestamp(),
+        label_style,
+        label,
+        CLR_RESET,
+        body_style,
+        message.as_ref(),
+        CLR_RESET
+    );
+}
+
+fn log_inline(label: &str, message: impl AsRef<str>) {
+    let (label_style, body_style) = log_styles(label);
+    eprint!(
+        "[{}] {}{}{} {}{}{}",
+        timestamp(),
+        label_style,
+        label,
+        CLR_RESET,
+        body_style,
+        message.as_ref(),
+        CLR_RESET
+    );
+}
+
+fn log_styles(label: &str) -> (&'static str, &'static str) {
+    match label {
+        SUCCESS => (SUCCESS_LABEL, ""),
+        INFO => (INFO_LABEL, INFO_BODY),
+        ERROR_ => (ERROR_LABEL, ERROR_BODY),
+        WARNING => (WARNING_LABEL, ""),
+        _ => ("", ""),
     }
 }
 
@@ -525,7 +576,25 @@ fn abs_string(path: &Path) -> String {
             .unwrap_or_else(|_| path.to_path_buf())
     };
 
-    base.display().to_string()
+    normalize_for_display(&base).display().to_string()
+}
+
+fn normalize_for_display(path: &Path) -> PathBuf {
+    use std::path::Component;
+
+    let mut out = PathBuf::new();
+    for comp in path.components() {
+        match comp {
+            Component::CurDir => {}
+            Component::ParentDir => {
+                if !out.pop() {
+                    out.push(comp.as_os_str());
+                }
+            }
+            other => out.push(other.as_os_str()),
+        }
+    }
+    out
 }
 
 fn absolute_path(path: &Path) -> io::Result<PathBuf> {
