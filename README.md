@@ -51,21 +51,21 @@ cargo install --path .
 cppu [OPTIONS] <source>
 ```
 
-Run `cppu` with no arguments to see the full help screen.
+Run `cppu --help` to see the full help screen.
 
 ### Options
 
 | Flag | Default | Description |
 | --- | --- | --- |
-| `<source>` | *(required)* | Path to the `.cpp` source file |
+| `<source>` | *(required)* | Path to the source file |
 | `-i, --input <path>` | stdin | Feed a file as the program's stdin |
 | `-o, --output <path>` | stdout | Capture program output (stdout + stderr) to a file |
-| `-a, --amal <path>` | off | Amalgamate all local `#include "…"` into a single file and compile that instead (see [Amalgamation](#amalgamation)) |
+| `-a, --amal <path>` | off | Output path to the amalgamated source file; when set, cppu compiles that generated file instead (see [Amalgamation](#amalgamation)) |
 | `-m, --max-output-chars <N>` | `50000` | Maximum captured characters before output is truncated |
 | `-q, --quiet` | off | Suppress all `[INFO]` / `[SUCCESS]` / `[WARNING]` log lines |
-| `--no-clean` | off | Keep the compiled `.exe` after the run |
-| `--use-clang` | off | Use `clang++` instead of `g++` |
-| `--cflags <flags>` | `"-O2"` | Extra flags forwarded to the compiler |
+| `--no-clean` | off | Keep the compiled executable after the run |
+| `--use-clang` | off | Use `clang++` instead of `g++` as the compiler |
+| `--cflags <flags>` | `"-O2"` | Extra flags passed through to `g++` or `clang++` |
 
 ---
 
@@ -85,7 +85,7 @@ This is especially useful for competitive programming, where you maintain a pers
 
 Given the following project layout:
 
-```
+```text
 solution.cpp      ← #include "dsu.h"
 dsu.h             ← your disjoint-set-union header
 ```

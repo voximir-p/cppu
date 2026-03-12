@@ -9,28 +9,31 @@ pub(crate) fn make_styles() -> ClapStyles {
         .header(
             Style::new()
                 .bold()
-                .fg_color(Some(Color::Ansi(AnsiColor::Green))),
+                .fg_color(Some(Color::Ansi(AnsiColor::Green)))
         )
         .usage(
             Style::new()
                 .bold()
-                .fg_color(Some(Color::Ansi(AnsiColor::Green))),
+                .fg_color(Some(Color::Ansi(AnsiColor::Green)))
         )
         .literal(
             Style::new()
                 .bold()
-                .fg_color(Some(Color::Ansi(AnsiColor::Cyan))),
+                .fg_color(Some(Color::Ansi(AnsiColor::Cyan)))
         )
-        .placeholder(Style::new().fg_color(Some(Color::Ansi(AnsiColor::Cyan))))
+        .placeholder(
+            Style::new()
+                .fg_color(Some(Color::Ansi(AnsiColor::Cyan)))
+        )
         .error(
             Style::new()
                 .bold()
-                .fg_color(Some(Color::Ansi(AnsiColor::Red))),
+                .fg_color(Some(Color::Ansi(AnsiColor::Red)))
         )
 }
 
 #[derive(clap::Parser)]
-#[command(name = "cppu", about = "C++ Utils v1.1.0", version = "1.1.0")]
+#[command(name = "cppu", about = "C++ Utils v1.1.1", version = "1.1.1")]
 pub(crate) struct Cli {
     #[arg(help = "Path to the source file")]
     pub source: PathBuf,
@@ -55,7 +58,7 @@ pub(crate) struct Cli {
         short = 'a',
         long = "amal",
         value_name = "path",
-        help = "Path to output the source file with all includes replace with the actual content of the header files recursively (optional; defaults to false)"
+        help = "Output path to the amalgamated source file (optional; disabled by default)"
     )]
     pub amal: Option<PathBuf>,
 
@@ -64,23 +67,23 @@ pub(crate) struct Cli {
         long = "max-output-chars",
         default_value_t = MAX_OUTPUT_CHARS,
         value_name = "N",
-        help = "Max captured output",
+        help = "Maximum captured output characters",
     )]
     pub max_output_chars: usize,
 
     #[arg(short = 'q', long = "quiet", help = "Suppress info logs")]
     pub quiet: bool,
 
-    #[arg(long = "no-clean", help = "Keep compiled .exe")]
+    #[arg(long = "no-clean", help = "Keep the compiled executable")]
     pub no_clean: bool,
 
-    #[arg(long = "use-clang", help = "Use clang++ instead of g++")]
+    #[arg(long = "use-clang", help = "Use clang++ instead of g++ as a compiler")]
     pub use_clang: bool,
 
     #[arg(
         long = "cflags",
         default_value = "-O2",
-        help = "Extra flags passed to g++"
+        help = "Extra flags to be passed to g++/clang++"
     )]
     pub cflags: String,
 }
