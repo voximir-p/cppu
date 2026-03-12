@@ -1,12 +1,12 @@
 # cppu
 
-**cppu (C++ Utility)** is a C++ utility tool for competitive programming. It can compile your code, read input from a file, write output to another file, and amalgamate local `#include`s into a single self-contained source.
+**cppu (C/C++ Utility)** is a C/C++ utility tool for competitive programming. It can compile your code, read input from a file, write output to another file, and amalgamate local `#include`s into a single self-contained source.
 
 ---
 
 ## Features
 
-- Compiles a `.cpp` file with `g++` (or `clang++`) and runs it in one command
+- Compiles a `.c`/`.cpp` file with `g++` (or `clang++`) and runs it in one command
 - **Amalgamation** — recursively inlines `#include "…"` directives into a single file, perfect for submitting to online judges
 - Pipes stdin from a file with `-i` and captures stdout+stderr to a file with `-o`
 - Timestamped, color-coded log output on stderr
@@ -144,3 +144,9 @@ echo "42" | cppu main.cpp
 6. Exits with the same code the child process returned.
 
 All diagnostic messages (compile errors, timing, status) are printed to **stderr** so they never pollute captured output.
+
+---
+
+## License
+
+cppu is licensed under the GNU General Public License v3.0 ([LICENSE](LICENSE) or <https://www.gnu.org/licenses/gpl-3.0.html#license-text>)
