@@ -79,7 +79,7 @@ When you pass `-a <path>`, cppu will produce a **single self-contained source fi
 4. Circular includes are detected and cause an immediate error.
 5. The amalgamated result is written to `<path>`, and **that file** is what gets compiled and executed instead of the original source.
 
-This is especially useful for competitive programming, where you maintain a personal header library but need to submit a single `.cpp` file to an online judge.
+This is especially useful for competitive programming, where you maintain a personal header library but need to submit a single `.c`/`.cpp` file to an online judge.
 
 ### Example
 
