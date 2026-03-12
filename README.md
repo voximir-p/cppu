@@ -1,6 +1,6 @@
 # cppu
 
-**cppu (C++ Utility)** is a C++ utility tool for competitive programming. It can compile your code, read input from a file, and write output to another file.
+**cppu (C++ Utils)** is a C++ utility tool for competitive programming. It can compile your code, read input from a file, and write output to another file.
 
 ---
 
