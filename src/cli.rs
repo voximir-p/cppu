@@ -30,11 +30,7 @@ pub(crate) fn make_styles() -> ClapStyles {
 }
 
 #[derive(clap::Parser)]
-#[command(
-    name = "cppu",
-    about = "CPP Utils v1.0",
-    version = "1.0"
-)]
+#[command(name = "cppu", about = "C++ Utils v1.1.0", version = "1.1.0")]
 pub(crate) struct Cli {
     #[arg(help = "Path to the source file")]
     pub source: PathBuf,
@@ -56,6 +52,14 @@ pub(crate) struct Cli {
     pub output: Option<PathBuf>,
 
     #[arg(
+        short = 'a',
+        long = "amal",
+        value_name = "path",
+        help = "Path to output the source file with all includes replace with the actual content of the header files recursively (optional; defaults to false)"
+    )]
+    pub amal: Option<PathBuf>,
+
+    #[arg(
         short = 'm',
         long = "max-output-chars",
         default_value_t = MAX_OUTPUT_CHARS,
@@ -64,22 +68,13 @@ pub(crate) struct Cli {
     )]
     pub max_output_chars: usize,
 
-    #[arg(
-        short = 'q',
-        long = "quiet",
-        default_value_t = false,
-        help = "Suppress info logs"
-    )]
+    #[arg(short = 'q', long = "quiet", help = "Suppress info logs")]
     pub quiet: bool,
 
-    #[arg(long = "no-clean", default_value_t = false, help = "Keep compiled .exe")]
+    #[arg(long = "no-clean", help = "Keep compiled .exe")]
     pub no_clean: bool,
 
-    #[arg(
-        long = "use-clang",
-        default_value_t = false,
-        help = "Use clang++ instead of g++"
-    )]
+    #[arg(long = "use-clang", help = "Use clang++ instead of g++")]
     pub use_clang: bool,
 
     #[arg(

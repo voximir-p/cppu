@@ -1,10 +1,10 @@
+use std::collections::HashSet;
 use std::fs::{self, File};
-use std::io::{self, Read, Write};
+use std::io::{self, BufRead, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::mpsc;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, mpsc};
 use std::thread;
 use std::time::Duration;
 
@@ -47,14 +47,14 @@ impl Runner {
             let active_child = Arc::clone(&active_child);
             let _ = ctrlc::set_handler(move || {
                 cancel_requested.store(true, Ordering::SeqCst);
-                if let Ok(guard) = active_child.lock() {
-                    if let Some(pid) = *guard {
-                        let _ = Command::new("taskkill")
-                            .args(["/PID", &pid.to_string(), "/T", "/F"])
-                            .stdout(Stdio::null())
-                            .stderr(Stdio::null())
-                            .status();
-                    }
+                if let Ok(guard) = active_child.lock()
+                    && let Some(pid) = *guard
+                {
+                    let _ = Command::new("taskkill")
+                        .args(["/PID", &pid.to_string(), "/T", "/F"])
+                        .stdout(Stdio::null())
+                        .stderr(Stdio::null())
+                        .status();
                 }
             });
         }
@@ -63,16 +63,20 @@ impl Runner {
         let mut exe = source.clone();
         exe.set_extension("exe");
 
-        if let Some(input) = &self.args.input {
-            if !input.exists() {
-                log_line(ERROR_, format!("Input file not found: {}", abs_string(input)));
-                return 1;
-            }
+        if let Some(input) = &self.args.input
+            && !input.exists()
+        {
+            log_line(
+                ERROR_,
+                format!("Input file not found: {}", abs_string(input)),
+            );
+            return 1;
         }
 
         if let Some(output) = &self.args.output {
             if let Some(parent) = output.parent()
-                && !parent.as_os_str().is_empty() && !parent.exists()
+                && !parent.as_os_str().is_empty()
+                && !parent.exists()
             {
                 log_line(
                     ERROR_,
@@ -104,29 +108,57 @@ impl Runner {
             return 1;
         }
 
-        if show_status_logs {
-            log_line(INFO, format!("Compiling file: {}", abs_string(&source)));
+        if let Some(amal) = &self.args.amal {
+            let mut seen = HashSet::new();
+            if let Some(content) = self.amalgamate(show_status_logs, &source, &mut seen) {
+                match File::create(amal) {
+                    Ok(mut file) => {
+                        if let Err(err) = file.write_all(content.as_bytes()) {
+                            log_line(
+                                ERROR_,
+                                format!("Failed to write amalgamated file: {}", abs_string(amal)),
+                            );
+                            log_line(ERROR_, err.to_string());
+                        }
+                    }
+                    Err(err) => {
+                        log_line(
+                            ERROR_,
+                            format!("Cannot create amalgamated file: {}", abs_string(amal)),
+                        );
+                        log_line(ERROR_, err.to_string());
+                    }
+                }
+            }
         }
 
-        let (compile_status, compile_stderr) = match compile_file(
-            &source,
-            &exe,
-            &self.args.cflags,
-            self.args.use_clang,
-        ) {
-            Ok(v) => v,
-            Err(err) => {
-                log_line(ERROR_, "Failed to start compiler");
-                if !self.args.quiet {
-                    log_line(ERROR_, err.to_string());
+        let compile_source = self.args.amal.as_ref().unwrap_or(&source);
+
+        if show_status_logs {
+            log_line(
+                INFO,
+                format!("Compiling file: {}", abs_string(compile_source)),
+            );
+        }
+
+        let (compile_status, compile_stderr) =
+            match compile_file(compile_source, &exe, &self.args.cflags, self.args.use_clang) {
+                Ok(v) => v,
+                Err(err) => {
+                    log_line(ERROR_, "Failed to start compiler");
+                    if !self.args.quiet {
+                        log_line(ERROR_, err.to_string());
+                    }
+                    return 1;
                 }
-                return 1;
-            }
-        };
+            };
 
         if compile_status.success() && exe.exists() {
             if show_status_logs {
-                log_line(INFO, format!("Testing output file: {}", abs_string(&exe)));
+                log_line(
+                    INFO,
+                    format!("Testing compiled executable: {}", abs_string(&exe)),
+                );
             }
 
             let exec_rc = execute_and_capture(
@@ -148,34 +180,36 @@ impl Runner {
 
             if show_status_logs {
                 if let Some(output) = &self.args.output {
-                    log_line(SUCCESS, format!("Output written to: {}", abs_string(output)));
+                    log_line(
+                        SUCCESS,
+                        format!("Output written to: {}", abs_string(output)),
+                    );
                 } else {
                     println!();
                     println!();
                     log_line(SUCCESS, "Output written to stdout");
                 }
             }
-        } else {
-            if compile_status.success() && !exe.exists() {
-                if !compile_stderr.trim().is_empty() {
-                    log_line(ERROR_, "Compiler output:");
-                    eprint!("{}", compile_stderr);
-                }
-                log_line(
-                    ERROR_,
-                    format!(
-                        "Compilation successful but cannot find output file: {}",
-                        abs_string(&exe)
-                    ),
-                );
-            } else {
-                if !compile_stderr.trim().is_empty() {
-                    log_line(ERROR_, "Compiler output:");
-                    eprint!("{}", compile_stderr);
-                    eprintln!();
-                }
-                log_line(ERROR_, "Compilation failed!");
+        } else if compile_status.success() {
+            if !compile_stderr.trim().is_empty() {
+                log_line(ERROR_, "Compiler output:");
+                eprint!("{}", compile_stderr);
             }
+            log_line(
+                ERROR_,
+                format!(
+                    "Compilation successful but cannot find output file: {}",
+                    abs_string(&exe)
+                ),
+            );
+            return 1;
+        } else {
+            if !compile_stderr.trim().is_empty() {
+                log_line(ERROR_, "Compiler output:");
+                eprint!("{}", compile_stderr);
+                eprintln!();
+            }
+            log_line(ERROR_, "Compilation failed!");
             return 1;
         }
 
@@ -192,6 +226,66 @@ impl Runner {
         }
 
         0
+    }
+
+    fn amalgamate(
+        &self,
+        show_status_logs: bool,
+        source: &Path,
+        seen: &mut HashSet<PathBuf>,
+    ) -> Option<String> {
+        let canonical = fs::canonicalize(source).unwrap_or_else(|_| source.to_path_buf());
+        if !seen.insert(canonical.clone()) {
+            log_line(
+                ERROR_,
+                format!("Circular include detected: {}", abs_string(source)),
+            );
+            std::process::exit(1);
+        }
+
+        let source_file = File::open(source).unwrap();
+        let reader = BufReader::new(source_file);
+        let mut content = String::new();
+
+        for line in reader.lines().map_while(Result::ok) {
+            let line_t = line.trim();
+            if !line_t.starts_with("#include") || !line_t.contains('"') {
+                content.push_str(&line);
+                content.push('\n');
+                continue;
+            }
+
+            let parts: Vec<&str> = line_t.split('"').collect();
+            if parts.len() < 2 {
+                if !self.args.quiet {
+                    log_line(ERROR_, format!("Malformed include directive: {}", line_t));
+                }
+                std::process::exit(1);
+            }
+
+            let included_file = parts[1];
+            let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+            let included_path = cwd.join(included_file);
+            if !included_path.exists() || !included_path.is_file() {
+                log_line(
+                    ERROR_,
+                    format!("Included file not found: {}", abs_string(&included_path)),
+                );
+                std::process::exit(1);
+            }
+            if show_status_logs {
+                log_line(
+                    INFO,
+                    format!("Amalgamating with: {}", abs_string(&included_path)),
+                );
+            }
+
+            let included_content = self.amalgamate(show_status_logs, &included_path, seen)?;
+            content.push_str(&included_content);
+            content.push('\n');
+        }
+
+        Some(content)
     }
 }
 
@@ -240,7 +334,10 @@ fn execute_and_capture(
         Ok(path) => path,
         Err(err) => {
             if !quiet {
-                log_line(ERROR_, format!("Failed to resolve executable path: {}", err));
+                log_line(
+                    ERROR_,
+                    format!("Failed to resolve executable path: {}", err),
+                );
             }
             return 1;
         }
@@ -264,7 +361,10 @@ fn execute_and_capture(
             }
             Err(_) => {
                 if !quiet {
-                    log_line(ERROR_, format!("Failed to open input file: {}", abs_string(inp)));
+                    log_line(
+                        ERROR_,
+                        format!("Failed to open input file: {}", abs_string(inp)),
+                    );
                 }
                 return 1;
             }
@@ -419,7 +519,10 @@ fn execute_and_capture(
                         if !quiet {
                             log_line(
                                 WARNING,
-                                format!("Output exceeds {} characters! Truncating output.", max_chars),
+                                format!(
+                                    "Output exceeds {} characters! Truncating output.",
+                                    max_chars
+                                ),
                             );
                         }
 
@@ -490,7 +593,10 @@ fn terminate_and_wait(child: &mut Child, timeout_ms: u64, quiet: bool) {
     }
 
     if !quiet {
-        log_line(WARNING, "Abortion took too long! Killing process immediately.");
+        log_line(
+            WARNING,
+            "Abortion took too long! Killing process immediately.",
+        );
     }
 
     let _ = child.kill();
@@ -502,7 +608,10 @@ fn clean_exe(output: &Path, show_status_logs: bool) -> i32 {
         match fs::remove_file(output) {
             Ok(_) => {
                 if show_status_logs {
-                    log_line(SUCCESS, format!("Deleted output file: {}", abs_string(output)));
+                    log_line(
+                        SUCCESS,
+                        format!("Deleted output file: {}", abs_string(output)),
+                    );
                 }
                 0
             }
@@ -519,7 +628,10 @@ fn clean_exe(output: &Path, show_status_logs: bool) -> i32 {
     } else {
         log_line(
             WARNING,
-            format!("Output file not found! Skipping deletion: {}", abs_string(output)),
+            format!(
+                "Output file not found! Skipping deletion: {}",
+                abs_string(output)
+            ),
         );
         1
     }
