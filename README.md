@@ -18,11 +18,11 @@
 
 ## Prerequisites
 
-| Requirement | Notes |
-| --- | --- |
-| **Rust + Cargo** | Install from [rustup.rs](https://rustup.rs) |
-| **g++** | MinGW-w64 on Windows; `g++` must be on `PATH` |
-| **clang++** | Optional; only needed if you use `--use-clang` |
+| Requirement      | Notes                                          |
+|------------------|------------------------------------------------|
+| **Rust + Cargo** | Install from [rustup.rs](https://rustup.rs)    |
+| **g++**          | MinGW-w64 on Windows; `g++` must be on `PATH`  |
+| **clang++**      | Optional; only needed if you use `--use-clang` |
 
 On Windows, the easiest way to get `g++` is via [MSYS2](https://www.msys2.org/) (`pacman -S mingw-w64-ucrt-x86_64-gcc`) and adding its `bin/` directory to your `PATH`.
 
@@ -55,17 +55,17 @@ Run `cppu --help` to see the full help screen.
 
 ### Options
 
-| Flag | Default | Description |
-| --- | --- | --- |
-| `<source>` | *(required)* | Path to the source file |
-| `-i, --input <path>` | stdin | Feed a file as the program's stdin |
-| `-o, --output <path>` | stdout | Capture program output (stdout + stderr) to a file |
-| `-a, --amal <path>` | off | Output path to the amalgamated source file; when set, cppu compiles that generated file instead (see [Amalgamation](#amalgamation)) |
-| `-m, --max-output-chars <N>` | `50000` | Maximum captured characters before output is truncated |
-| `-q, --quiet` | off | Suppress all `[INFO]` / `[SUCCESS]` / `[WARNING]` log lines |
-| `--no-clean` | off | Keep the compiled executable after the run |
-| `--use-clang` | off | Use `clang++` instead of `g++` as the compiler |
-| `--cflags <flags>` | `"-O2"` | Extra flags passed through to `g++` or `clang++` |
+| Flag                         | Default      | Description                                                                                                                         |
+|------------------------------|--------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| `<source>`                   | *(required)* | Path to the source file                                                                                                             |
+| `-i, --input <path>`         | stdin        | Feed a file as the program's stdin                                                                                                  |
+| `-o, --output <path>`        | stdout       | Capture program output (stdout + stderr) to a file                                                                                  |
+| `-a, --amal <path>`          | off          | Output path to the amalgamated source file; when set, cppu compiles that generated file instead (see [Amalgamation](#amalgamation)) |
+| `-m, --max-output-chars <N>` | `50000`      | Maximum captured characters before output is truncated                                                                              |
+| `-q, --quiet`                | off          | Suppress all `[INFO]` / `[SUCCESS]` / `[WARNING]` log lines                                                                         |
+| `--no-clean`                 | off          | Keep the compiled executable after the run                                                                                          |
+| `--use-clang`                | off          | Use `clang++` instead of `g++` as the compiler                                                                                      |
+| `--cflags <flags>`           | `"-O2"`      | Extra flags passed through to `g++` or `clang++`                                                                                    |
 
 ---
 
@@ -125,12 +125,12 @@ echo "42" | cppu main.cpp
 
 ## Exit Codes
 
-| Code | Meaning |
-| --- | --- |
-| `0` | Program exited successfully |
-| `1` | Output was truncated (program hit the `-m` limit) |
-| *(program's own code)* | Whatever exit code the child process returned |
-| Non-zero | Compilation failed, or the process could not be launched |
+| Code                   | Meaning                                                  |
+|------------------------|----------------------------------------------------------|
+| `0`                    | Program exited successfully                              |
+| `1`                    | Output was truncated (program hit the `-m` limit)        |
+| *(program's own code)* | Whatever exit code the child process returned            |
+| Non-zero               | Compilation failed, or the process could not be launched |
 
 ---
 
