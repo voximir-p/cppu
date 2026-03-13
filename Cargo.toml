@@ -1,7 +1,16 @@
 [package]
 name = "cppu"
 version = "1.1.2"
+authors = ["voximir"]
 edition = "2024"
+repository = "https://github.com/voximir-p/cppu"
+description = "A C/C++ utility tool for competitive programming. It can compile your code, read input from a file, write output to another file, and amalgamate local #includes into a single self-contained source."
+
+[package.metadata.wix]
+upgrade-guid = "A2885F18-97EA-466B-9553-8ACC67E59828"
+path-guid = "095982A6-892A-4DC5-BD78-677A9F2A691C"
+license = false
+eula = false
 
 [dependencies]
 clap = { version = "4.6.0", features = ["derive"] }
@@ -9,3 +18,8 @@ anstyle = "1.0.13"
 chrono = "0.4.44"
 ctrlc = "3.5.2"
 shlex = "1.3.0"
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"

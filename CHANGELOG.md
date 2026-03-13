@@ -12,8 +12,6 @@
 - Updated quiet option help message.
 - Update dependencies to the latest versions to ensure compatibility and security.
 
-### Removed
-
 ## [1.1.1] - 2026-03-12
 
 ### Fixed
