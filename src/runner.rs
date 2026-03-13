@@ -85,6 +85,8 @@ impl Runner {
                 return 1;
             }
 
+            let out_exists = output.exists();
+
             if let Err(err) = File::create(output) {
                 log_line(
                     ERROR_,
@@ -95,8 +97,8 @@ impl Runner {
                 }
                 return 1;
             }
-
-            if show_status_logs {
+            
+            if show_status_logs && !out_exists {
                 log_line(INFO, format!("Created output file: {}", abs_string(output)));
             }
         }

@@ -2,17 +2,15 @@ mod cli;
 mod runner;
 
 use clap::{CommandFactory, FromArgMatches};
-use std::env;
-use std::process;
 
 fn main() {
     let mut cmd = cli::Cli::command().styles(cli::make_styles());
 
     // Match --help behavior when invoked without arguments.
-    if env::args_os().len() == 1 {
+    if std::env::args_os().len() == 1 {
         let _ = cmd.print_long_help();
         println!();
-        process::exit(0);
+        std::process::exit(0);
     }
 
     let parser = cmd.get_matches();
@@ -20,5 +18,5 @@ fn main() {
 
     let runner = runner::Runner::new(args);
     let rc = runner.run();
-    process::exit(rc);
+    std::process::exit(rc);
 }

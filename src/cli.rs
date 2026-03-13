@@ -33,7 +33,7 @@ pub(crate) fn make_styles() -> ClapStyles {
 }
 
 #[derive(clap::Parser)]
-#[command(name = "cppu", about = "cppu 1.1.1", version = "1.1.1")]
+#[command(name = "cppu", about = "cppu 1.1.2", version = "1.1.2")]
 pub(crate) struct Cli {
     #[arg(help = "Path to the source file")]
     pub source: PathBuf,
@@ -71,7 +71,7 @@ pub(crate) struct Cli {
     )]
     pub max_output_chars: usize,
 
-    #[arg(short = 'q', long = "quiet", help = "Suppress info logs")]
+    #[arg(short = 'q', long = "quiet", help = "Suppress info and warning logs")]
     pub quiet: bool,
 
     #[arg(long = "no-clean", help = "Keep the compiled executable")]
