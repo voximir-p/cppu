@@ -18,11 +18,11 @@
 
 ## Prerequisites
 
-| Requirement      | Notes                                          |
-|------------------|------------------------------------------------|
-| **Rust + Cargo** | Install from [rustup.rs](https://rustup.rs)    |
-| **g++**          | MinGW-w64 on Windows; `g++` must be on `PATH`  |
-| **clang++**      | Optional; only needed if you use `--use-clang` |
+| Requirement      | Notes                                                                        |
+|------------------|------------------------------------------------------------------------------|
+| **Rust + Cargo** | Install from [rustup.rs](https://rustup.rs); only needed to build the project |
+| **g++**          | MinGW-w64 on Windows; `g++` must be on `PATH`                                |
+| **clang++**      | Optional; only needed if you use `--use-clang`                               |
 
 On Windows, the easiest way to get `g++` is via [MSYS2](https://www.msys2.org/) (`pacman -S mingw-w64-ucrt-x86_64-gcc`) and adding its `bin/` directory to your `PATH`.
 
