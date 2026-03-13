@@ -147,6 +147,12 @@ All diagnostic messages (compile errors, timing, status) are printed to **stderr
 
 ---
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a detailed history of changes and improvements.
+
+---
+
 ## License
 
 cppu is licensed under the GNU General Public License v3.0 ([LICENSE](LICENSE) or <https://www.gnu.org/licenses/gpl-3.0.html#license-text>)
