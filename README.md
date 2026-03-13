@@ -155,4 +155,4 @@ See [CHANGELOG.md](CHANGELOG.md) for a detailed history of changes and improveme
 
 ## License
 
-cppu is licensed under the GNU General Public License v3.0 ([LICENSE](LICENSE) or <https://www.gnu.org/licenses/gpl-3.0.html#license-text>)
+cppu is licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html#license-text) ([LICENSE](LICENSE))
