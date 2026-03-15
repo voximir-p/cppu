@@ -61,7 +61,7 @@ impl Runner {
 
         let source = self.args.source.clone();
         let mut exe = source.clone();
-        exe.set_extension("exe");
+        exe.set_extension("");
 
         if let Some(input) = &self.args.input
             && !input.exists()
@@ -97,7 +97,7 @@ impl Runner {
                 }
                 return 1;
             }
-            
+
             if show_status_logs && !out_exists {
                 log_line(INFO, format!("Created output file: {}", abs_string(output)));
             }

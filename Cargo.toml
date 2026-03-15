@@ -1,6 +1,6 @@
 [package]
 name = "cppu"
-version = "1.1.2"
+version = "1.1.3"
 authors = ["voximir"]
 edition = "2024"
 repository = "https://github.com/voximir-p/cppu"

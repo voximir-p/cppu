@@ -9,31 +9,28 @@ pub(crate) fn make_styles() -> ClapStyles {
         .header(
             Style::new()
                 .bold()
-                .fg_color(Some(Color::Ansi(AnsiColor::Green)))
+                .fg_color(Some(Color::Ansi(AnsiColor::Green))),
         )
         .usage(
             Style::new()
                 .bold()
-                .fg_color(Some(Color::Ansi(AnsiColor::Green)))
+                .fg_color(Some(Color::Ansi(AnsiColor::Green))),
         )
         .literal(
             Style::new()
                 .bold()
-                .fg_color(Some(Color::Ansi(AnsiColor::Cyan)))
+                .fg_color(Some(Color::Ansi(AnsiColor::Cyan))),
         )
-        .placeholder(
-            Style::new()
-                .fg_color(Some(Color::Ansi(AnsiColor::Cyan)))
-        )
+        .placeholder(Style::new().fg_color(Some(Color::Ansi(AnsiColor::Cyan))))
         .error(
             Style::new()
                 .bold()
-                .fg_color(Some(Color::Ansi(AnsiColor::Red)))
+                .fg_color(Some(Color::Ansi(AnsiColor::Red))),
         )
 }
 
 #[derive(clap::Parser)]
-#[command(name = "cppu", about = "cppu 1.1.2", version = "1.1.2")]
+#[command(name = "cppu", about = "cppu 1.1.3", version = "1.1.3")]
 pub(crate) struct Cli {
     #[arg(help = "Path to the source file")]
     pub source: PathBuf,
