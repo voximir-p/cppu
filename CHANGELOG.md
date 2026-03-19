@@ -62,6 +62,8 @@
 - Suppress the log when the `--quiet` flag is used, allowing users to focus on the program's output without distraction.
 - Detailed README with installation instructions, usage examples, and explanations of all available options.
 
+
+[1.1.3]: https://github.com/voximir-p/cppu/compare/v1.1.3...HEAD
 [1.1.2]: https://github.com/voximir-p/cppu/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/voximir-p/cppu/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/voximir-p/cppu/compare/v1.1.0...v1.1.1
