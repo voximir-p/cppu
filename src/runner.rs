@@ -266,7 +266,7 @@ impl Runner {
             }
 
             let included_file = parts[1];
-            let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+            let cwd = source.parent().unwrap_or_else(|| Path::new("."));
             let included_path = cwd.join(included_file);
             if !included_path.exists() || !included_path.is_file() {
                 log_line(
