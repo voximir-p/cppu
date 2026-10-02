@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.0] - 2026-10-02
+
+### Fixed
+
+- Amalgamation now treats the header relative to the file and not current working directory.
+
 ## [1.1.3] - 2026-03-15
 
 ### Fixed
