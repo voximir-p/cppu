@@ -5,6 +5,10 @@ authors = ["voximir"]
 edition = "2024"
 repository = "https://github.com/voximir-p/cppu"
 description = "A C/C++ utility tool for competitive programming. It can compile your code, read input from a file, write output to another file, and amalgamate local #includes into a single self-contained source."
+license = "GPL-3.0"
+readme = "README.md"
+keywords = ["cli", "tool", "utility"]
+categories = ["command-line-utilities"]
 
 [package.metadata.wix]
 upgrade-guid = "A2885F18-97EA-466B-9553-8ACC67E59828"
