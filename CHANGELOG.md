@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1] - 2026-10-03
+
+### Added
+
+- Installation via Cargo for easier setup and management of the tool.
+- Updated README with new installation instructions.
+
 ## [1.2.0] - 2026-10-02
 
 ### Fixed
@@ -69,7 +76,8 @@
 - Detailed README with installation instructions, usage examples, and explanations of all available options.
 
 
-[1.2.0]: https://github.com/voximir-p/cppu/compare/v1.2.0...HEAD
+[1.2.1]: https://github.com/voximir-p/cppu/compare/v1.2.1...HEAD
+[1.2.0]: https://github.com/voximir-p/cppu/compare/v1.2.0...v1.2.1
 [1.1.3]: https://github.com/voximir-p/cppu/compare/v1.1.3...v1.2.0
 [1.1.2]: https://github.com/voximir-p/cppu/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/voximir-p/cppu/compare/v1.1.1...v1.1.2
