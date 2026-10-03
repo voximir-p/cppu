@@ -30,7 +30,7 @@ pub(crate) fn make_styles() -> ClapStyles {
 }
 
 #[derive(clap::Parser)]
-#[command(name = "cppu", about = "cppu 1.1.3", version = "1.1.3")]
+#[command(name = "cppu", about = "CPP Utils", version)]
 pub(crate) struct Cli {
     #[arg(help = "Path to the source file")]
     pub source: PathBuf,
