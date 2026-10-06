@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2] - 2026-10-06
+
+### Fixed
+
+- Fixed a bug where on Windows, the runner couldn't find the executable because of the `.exe` extension not being
+  appended to the output file name.
+
 ## [1.2.1] - 2026-10-03
 
 ### Added
@@ -39,7 +46,8 @@
 
 ### Changed
 
-- Update README and CLI options for clarity and consistency with the new amalgamation feature, and to improve overall readability.
+- Update README and CLI options for clarity and consistency with the new amalgamation feature, and to improve overall
+  readability.
 
 ## [1.1.0] - 2026-03-12
 
@@ -51,7 +59,8 @@
 ### Changed
 
 - Refactor internal code structure for better maintainability and readability, without changing the public API.
-- Refactor README to be more concise and focused on usage instructions, moving the "Amalgamation" section into its own dedicated section for clarity.
+- Refactor README to be more concise and focused on usage instructions, moving the "Amalgamation" section into its own
+  dedicated section for clarity.
 - Improve formatting of options table for better readability.
 
 ### Removed
@@ -63,7 +72,8 @@
 
 ### Added
 
-- Ability to compile and run C/C++ source files with a single command, without needing to write a Makefile or manually invoke the compiler.
+- Ability to compile and run C/C++ source files with a single command, without needing to write a Makefile or manually
+  invoke the compiler.
 - Ability to pipe custom input into the program's stdin, and capture stdout to a file.
 - Option to use `clang++` instead of `g++` as the compiler.
 - Option to specify extra flags passed through to the compiler.
@@ -75,11 +85,10 @@
 - Suppress the log when the `--quiet` flag is used, allowing users to focus on the program's output without distraction.
 - Detailed README with installation instructions, usage examples, and explanations of all available options.
 
-
-[1.2.1]: https://github.com/voximir-p/cppu/compare/v1.2.1...HEAD
-[1.2.0]: https://github.com/voximir-p/cppu/compare/v1.2.0...v1.2.1
-[1.1.3]: https://github.com/voximir-p/cppu/compare/v1.1.3...v1.2.0
-[1.1.2]: https://github.com/voximir-p/cppu/compare/v1.1.2...v1.1.3
+[1.2.2]: https://github.com/voximir-p/cppu/compare/v1.2.1...v1.2.2
+[1.2.1]: https://github.com/voximir-p/cppu/compare/v1.2.0...v1.2.1
+[1.2.0]: https://github.com/voximir-p/cppu/compare/v1.1.3...v1.2.0
+[1.1.3]: https://github.com/voximir-p/cppu/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/voximir-p/cppu/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/voximir-p/cppu/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/voximir-p/cppu/compare/v1.0.0...v1.1.0
