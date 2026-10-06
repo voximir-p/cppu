@@ -155,7 +155,10 @@ impl Runner {
                 }
             };
 
-        if compile_status.success() && exe.exists() {
+        if compile_status.success()
+            && let Some(compiled_exe) = find_compiled_executable(&exe)
+        {
+            exe = compiled_exe;
             if show_status_logs {
                 log_line(
                     INFO,
@@ -320,6 +323,23 @@ fn compile_file(
         output.status,
         String::from_utf8_lossy(&output.stderr).into_owned(),
     ))
+}
+
+fn find_compiled_executable(output: &Path) -> Option<PathBuf> {
+    if output.exists() {
+        return Some(output.to_path_buf());
+    }
+
+    #[cfg(windows)]
+    {
+        let mut with_exe = output.to_path_buf();
+        with_exe.set_extension("exe");
+        if with_exe.exists() {
+            return Some(with_exe);
+        }
+    }
+
+    None
 }
 
 fn execute_and_capture(
