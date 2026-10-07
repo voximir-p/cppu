@@ -1,6 +1,6 @@
 [package]
 name = "cppu"
-version = "1.2.2"
+version = "1.2.3"
 authors = ["voximir"]
 edition = "2024"
 repository = "https://github.com/voximir-p/cppu"
@@ -19,10 +19,8 @@ eula = false
 [dependencies]
 clap = { version = "4.6.7", features = ["derive"] }
 anstyle = "1.0.14"
-chrono = "0.4.45"
 ctrlc = "3.5.2"
 shlex = "2.0.1"
-ss = "0.1.0"
 num-format = "0.4.4"
 
 # The profile that 'dist' will build with

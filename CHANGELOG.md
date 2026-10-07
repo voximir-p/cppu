@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.3] - 2026-10-08
+
+### Changed
+
+- Improved status messages inspired by Cargo.
+
 ## [1.2.2] - 2026-10-06
 
 ### Fixed
@@ -85,6 +91,7 @@
 - Suppress the log when the `--quiet` flag is used, allowing users to focus on the program's output without distraction.
 - Detailed README with installation instructions, usage examples, and explanations of all available options.
 
+[1.2.3]: https://github.com/voximir-p/cppu/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/voximir-p/cppu/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/voximir-p/cppu/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/voximir-p/cppu/compare/v1.1.3...v1.2.0
