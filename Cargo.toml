@@ -22,6 +22,8 @@ anstyle = "1.0.14"
 chrono = "0.4.45"
 ctrlc = "3.5.2"
 shlex = "2.0.1"
+ss = "0.1.0"
+num-format = "0.4.4"
 
 # The profile that 'dist' will build with
 [profile.dist]
